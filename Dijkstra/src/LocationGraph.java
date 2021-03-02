@@ -14,15 +14,13 @@ public class LocationGraph<E> {
 		//variables
 		int xLoc, yLoc; //THIS IS NOT AN ARRAY INSIDE THIS CLASS
 		E info; 
-		int dist;
 		HashSet<Edge> edges; 
 		
 		//constructor
 		public Vertex(E info, int xLoc, int yLoc) {
 			this.info = info;
 			this.xLoc = xLoc;
-			this.yLoc = yLoc;
-			this.dist = Integer.MAX_VALUE; //inital dist always infinity
+			this.yLoc = yLoc; 
 			edges = new HashSet<Edge>();
 		}
 		
@@ -32,10 +30,7 @@ public class LocationGraph<E> {
 			return point;
 		}
 		
-		public void setDist(int d) {
-			dist = d;
-		}
-	
+
 	}
 	
 	public class Edge {
@@ -63,15 +58,36 @@ public class LocationGraph<E> {
 	
 	public class PriorityQueue {
 		
-		//variables
-		public ArrayList<Vertex> queue = new ArrayList<Vertex>();
-		
-		//methods
-		public Vertex pop() {
-			return queue.remove(0);
+		//make nodes really quick :)
+		public class Node<E> {
+			
+			public double priority;
+			public E info;
+			
+			public Node(double p, E i) {
+				priority = p;
+				info = i;
+			}
+			
+			public String toString() {
+				return "(" + info.toString() + ", " + priority + ")";
+			}
+			
+
 		}
 		
-		public void put(Vertex v) {
+		
+		//variables
+		public ArrayList<Node<E>> queue = new ArrayList<Node<E>>();
+		
+		//methods
+		public E pop() {
+			return queue.remove(0).info;
+		}
+		
+		public void put(E info, double priority) {
+			
+			Node<E> v = new Node<E>(priority, info);
 			
 			//check if list is empty
 			if(queue.size() == 0) {
@@ -82,19 +98,19 @@ public class LocationGraph<E> {
 				int index = queue.indexOf(v);
 				
 				//if new vertex has smaller dist
-				if(queue.get(index).dist > v.dist) {
+				if(queue.get(index).priority > v.priority) {
 					queue.remove(queue.get(index));
 					queue.add(v);
 				}
 			}
 			
 			//check if highest priority (smallest dist)
-			else if(queue.get(0).dist > v.dist) {
+			else if(queue.get(0).priority > v.priority) {
 				queue.add(0, v);
 			}
 			
 			//check if lowest priority (biggest dist)
-			else if(queue.get(queue.size()-1).dist < v.dist) {
+			else if(queue.get(queue.size()-1).priority < v.priority) {
 				queue.add(v);
 			}
 			
@@ -105,10 +121,10 @@ public class LocationGraph<E> {
 				
 				while(start < end) {
 					//get midpoint
-					Vertex midpoint = queue.get((start+end)/2);
+					Node<E> midpoint = queue.get((start+end)/2);
 					
 					//reset start and end based on midpoint priority
-					if(midpoint.dist < v.dist) {
+					if(midpoint.priority < v.priority) {
 						start = (start+end)/2 + 1;
 					} else {
 						end = (start+end)/2;
@@ -138,7 +154,7 @@ public class LocationGraph<E> {
 	
 	public int getLength(Vertex v1, Vertex v2) {
 		
-		return (int)(Math.sqrt( (v2.yLoc - v1.yLoc) * (v2.yLoc - v1.yLoc) + (v2.xLoc - v1.xLoc) + (v2.xLoc - v1.xLoc)));
+		return (int)(Math.sqrt( (v2.yLoc - v1.yLoc) * (v2.yLoc - v1.yLoc) + (v2.xLoc - v1.xLoc) * (v2.xLoc - v1.xLoc)));
 
 	}
 	
@@ -158,36 +174,35 @@ public class LocationGraph<E> {
 	}
 	
 	//***ALGORITHM TINGS***
-	public ArrayList<Object> dijkstra(Vertex start, Vertex target) {
+	public ArrayList<Object> dijkstra(E start, E target) {
 		
 		//variables
 		PriorityQueue toVisit = new PriorityQueue();
 		HashSet<Vertex> visited = new HashSet<Vertex>();
 		HashMap<Vertex, Edge> leadsTo = new HashMap<Vertex,Edge>();
+		HashMap<Vertex, Double> distance = new HashMap<Vertex, Double>();
 		
 		//iterate through list and set all distances to infinity
-		Iterator vIt = vertices.entrySet().iterator();
-		while(vIt.hasNext()) {
-			//access the actual vertex
-			HashMap.Entry mapElement = (HashMap.Entry)vIt.next();
-			Vertex v = (Vertex) mapElement.getValue();
-			v.setDist(Integer.MAX_VALUE);
+		for(Vertex v : vertices.values()){
+			distance.put(v, Double.MAX_VALUE);
 		}
 		
 		//set start dist to 0 and add to toVisit
-		start.setDist(0);
-		toVisit.put(start);
-		
+		distance.put(vertices.get(start), (double) 0);
+		toVisit.put(start, 0);
+	
 		//until itself target is the shortest 
 		while(toVisit.size() != 0) {
 			
 			//get first thing
-			Vertex curr = toVisit.pop();
+			E cI = toVisit.pop();
+			Vertex curr = vertices.get(cI);
 			
 			//check if its target
-			if(curr == target) {
+			if(cI.equals(target)) {
 				// CALL BACKTRACE
-				return backtrace(target, leadsTo);
+				System.out.println("we got here");
+				return backtrace(vertices.get(target), leadsTo);
 			} else {
 				
 				//iterate through all unvisited neighbors
@@ -196,23 +211,24 @@ public class LocationGraph<E> {
 					Vertex neighbor = e.getNeighbor(curr);
 					
 					//check if visited
-					if(visited.contains(neighbor.info)) { continue; }
+					if(visited.contains(neighbor)) { continue; }
 					
 					// calculate new total dist
-					neighbor.setDist( curr.dist + e.length);
+					Double newDist = distance.get(curr) + e.length;
 					
 					//check if new dist < map dist
-					if(neighbor.dist < vertices.get(neighbor.info).dist) {
+					if(newDist < distance.get(neighbor)) {
 						
 						//update map dist
-						vertices.get(neighbor.info).setDist(neighbor.dist);
+						distance.put(neighbor, newDist);
 						//add to queue
-						toVisit.put(neighbor);
+						toVisit.put(neighbor.info, distance.get(neighbor));
 						//add to leadsTo
 						leadsTo.put(neighbor, e);	
 					}
 				}
-				
+
+				System.out.println(toVisit.queue);
 				//mark curr as visited
 				visited.add(curr);
 			}
@@ -237,6 +253,27 @@ public class LocationGraph<E> {
 		path.add(0, curr.info);
 		return path;
 	
+	}
+	
+	public static void main(String[] args) {
+		
+		LocationGraph<String> g = new LocationGraph<String>();
+		
+		g.addVertex("A", 100, 100);
+		g.addVertex("B", 1000, 100);
+		g.addVertex("C", 600, 300);
+		g.addVertex("D", 100, 300);
+		g.addVertex("E", 300, 300);
+		
+		g.connect("A", "B");
+		g.connect("B", "C");
+		g.connect("A", "D");
+		g.connect("D", "E");
+		g.connect("E", "C");
+		
+		System.out.println(g.dijkstra("A", "C"));
+		
+		
 	}
 	
 	
