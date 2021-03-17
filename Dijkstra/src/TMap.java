@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -27,48 +28,50 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-public class TMap {
+public class TMap extends JPanel{
 
 	//***VARIABLES***
 	private final int IMG_WIDTH = 700, IMG_HEIGHT = 700;
-	private final int BORDERX = 40, BORDERY = 70;
+	private final int BORDER = 40;
 	private String GRAY = "#9a9b9b";
 	
 	ArrayList<String> inputs = new ArrayList<String>();
 	LocationGraph<String> vtx = new LocationGraph<String>();
+	Image map;
 	
 	
 	//***CONSTRUCTOR***
 	public TMap() throws IOException {
 		
+		//load the image
+		map = ImageIO.read(new File("final.JPEG"));
+		
+		//build everything
 		buildGraph();
 		System.out.println(vtx.vertices);
+		
+		
 		
 		//UI STUFF
 		
 			//main panel
-			JPanel panel = new JPanel();
-			BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.Y_AXIS);
-			panel.setLayout(boxlayout);
-			panel.setBorder(BorderFactory.createEmptyBorder(20,20, 20, 20));
-			panel.setBackground(Color.decode(GRAY));
+			JPanel mainPanel = new JPanel();
+			BoxLayout boxlayout = new BoxLayout(mainPanel, BoxLayout.Y_AXIS);
+			mainPanel.setLayout(boxlayout);
+			mainPanel.setBackground(Color.decode(GRAY));
+			mainPanel.setBorder(BorderFactory.createEmptyBorder(20,20, 20, 20));
+		
+			//image panel (which is now class)
 			
-			//image label
-			BufferedImage mapPic = ImageIO.read(new File("map.JPEG"));
-			JLabel picLabel = new JLabel(new ImageIcon(mapPic));
-			picLabel.addMouseListener(new MouseListener() {
+			/*
+			this.addMouseListener(new MouseListener() {
 
-
-				public void mouseClicked(MouseEvent e) {
+				public void mousePressed(MouseEvent e) {
 					
-					
-					
-				//INITAL WRITE VERTICES METHOD
-				/*
 					//get the inputs
 					int currX = e.getX();
 					int currY = e.getY(); 
-					String currName = (String)JOptionPane.showInputDialog(panel, "What is the name of this Vertex", "Input",
+					String currName = (String)JOptionPane.showInputDialog(null, "What is the name of this Vertex", "Input",
 							JOptionPane.PLAIN_MESSAGE, null, null, null);
 					
 					//add to one long string in correct format
@@ -76,59 +79,76 @@ public class TMap {
 					
 					//add to array list
 					inputs.add(curr);
-				*/
-			
+					
+					
 				}
-				
-				public void mousePressed(MouseEvent e) {}
+				public void mouseClicked(MouseEvent e) {}
 				public void mouseReleased(MouseEvent e) {}
 				public void mouseEntered(MouseEvent e) {}
 				public void mouseExited(MouseEvent e) {}
-				
 			});
-			panel.add(picLabel);
+			*/
+			mainPanel.add(this);
 			
-			/*
-			JButton temp = new JButton("build text file");
+			
+			JButton temp = new JButton("class info");
 			temp.addActionListener(new ActionListener() {
-
 				public void actionPerformed(ActionEvent e) {
 					
+					System.out.println(inputs);
 					
+					/*
 					try {
 						writeTextFile();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 						System.out.println("Could not build Text File");
 					}
-					
+					*/
 					
 				}
 				
 			});
-			panel.add(temp);
-			*/
+			mainPanel.add(temp);
 			
 			
 			
 			//main container
 			JFrame frame = new JFrame();
-			frame.setSize(IMG_WIDTH + BORDERX + 500, IMG_HEIGHT + BORDERY);
+			frame.setSize(IMG_WIDTH + BORDER + 500, IMG_HEIGHT + BORDER);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.add(panel);
+			frame.add(mainPanel);
 			frame.setLocationRelativeTo(null);
 			frame.setResizable(false);
 			frame.setVisible(true);
-			panel.setFocusable(true);
+			this.setFocusable(true);
 			
-		
-			
-			
+			//repaint
 			frame.repaint();
-			
-			
-			
+
 	}
+	
+	//***GRAPHICS METHODS***
+		public void paint(Graphics g) {
+			g.drawImage(map, 20, 20, IMG_WIDTH, IMG_HEIGHT, null);
+			drawVertices(g);
+		}
+		
+		public void drawVertices(Graphics g) {
+			
+			for(LocationGraph<String>.Vertex v : vtx.vertices.values()) {	
+				int[] arr = v.getLoc();
+				drawCenteredCircle(g, arr[0], arr[1], 10);
+			}
+		}
+		
+		
+		public void drawCenteredCircle(Graphics g, int x, int y, int r) {
+			x = x-(r/2);
+			y = y-(r/2);
+			g.setColor(Color.BLACK);
+			g.fillOval(x,y,r,r);
+		}
 	
 	//***MISC METHODS***
 	public void writeTextFile() throws IOException {
@@ -155,27 +175,6 @@ public class TMap {
 			vtx.addVertex(arr[2], Integer.parseInt(arr[0]), Integer.parseInt(arr[1]));
 		}
 		br.close();
-	}
-	
-	//***GRAPHICS METHODS***
-	public void paint(Graphics g) {
-		drawVertices(g);
-	}
-	
-	public void drawVertices(Graphics g) {
-		
-		for(LocationGraph<String>.Vertex v : vtx.vertices.values()) {	
-			int[] arr = v.getLoc();
-			drawCenteredCircle(g, arr[0], arr[1], 10);
-		}
-	}
-	
-	
-	public void drawCenteredCircle(Graphics g, int x, int y, int r) {
-		x = x-(r/2);
-		y = y-(r/2);
-		g.setColor(Color.BLACK);
-		g.fillOval(x,y,r,r);
 	}
 	
 	
