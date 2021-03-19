@@ -145,6 +145,8 @@ public class LocationGraph<E> {
 	//***CONSTRUCTOR***
 	public LocationGraph() {
 		vertices = new HashMap<E, Vertex>();
+		
+		
 	}
 	
 	//***SMALLER METHODS***
