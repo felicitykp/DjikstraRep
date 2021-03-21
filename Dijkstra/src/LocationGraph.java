@@ -203,7 +203,7 @@ public class LocationGraph<E> {
 			//check if its target
 			if(cI.equals(target)) {
 				// CALL BACKTRACE
-				System.out.println("we got here");
+		//		System.out.println("we got here");
 				return backtrace(vertices.get(target), leadsTo);
 			} else {
 				
@@ -230,7 +230,7 @@ public class LocationGraph<E> {
 					}
 				}
 
-				System.out.println(toVisit.queue);
+		//		System.out.println(toVisit.queue);
 				//mark curr as visited
 				visited.add(curr);
 			}
