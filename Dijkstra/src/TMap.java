@@ -183,6 +183,7 @@ public class TMap extends JPanel{
 				run.setBorderPainted(false);
 				run.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						mainText = "";
 						runDijkstra();
 						textArea.setText(mainText);
 						repaint();
