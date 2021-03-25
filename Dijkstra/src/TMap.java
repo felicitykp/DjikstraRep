@@ -39,7 +39,7 @@ public class TMap extends JPanel{
 	private final int IMG_WIDTH = 700, IMG_HEIGHT = 700;
 	private final int BORDER = 40;
 	private final int PANEL_WIDTH = 450;
-	private String GRAY = "#939494", WHITE = "#fffcf7", BLACK = "#231f20", DGRAY = "#605f60", PURP = "#a790c4";
+	private String GRAY = "#939494", WHITE = "#fffcf7", BLACK = "#231f20", DGRAY = "#babebf";
 	private final int CIRCLEW = 10;
 	
 	
@@ -209,6 +209,7 @@ public class TMap extends JPanel{
 						v2info = null;
 						mainText = "";
 						textArea.setText(mainText);
+						reqStops.clear();
 						repaint();
 					}
 				});
